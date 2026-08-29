@@ -1,0 +1,43 @@
+{
+  "name": "dsh-profile-web",
+  "private": true,
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app",
+        "dsh-dice-game",
+        "dsh-paperclip",
+        "dshmarket",
+        "dsh-recommend",
+        "dsh-mnemon",
+        "@michengai/dsh-agency-agents",
+        "@michengai/dsh-archive-manager",
+        "@michengai/dsh-automation",
+        "@michengai/dsh-im-connect",
+        "@michengai/dsh-skills-manager",
+        "dsh-popout-sidebar",
+        "dsh-vision-router",
+        "@omdsh-dev/dsh-genui",
+        "@dsh-external/dsh-client-ui-skin-maid-atelier"
+      ]
+    }
+  },
+  "dependencies": {
+    "@dsh-external/dsh-client-ui-skin-maid-atelier": "file:./node_modules/dsh-deep-whale/maid-atelier",
+    "@michengai/dsh-agency-agents": "^0.1.20",
+    "@michengai/dsh-archive-manager": "^0.1.12",
+    "@michengai/dsh-automation": "^0.1.5",
+    "@michengai/dsh-im-connect": "^0.1.10",
+    "@michengai/dsh-skills-manager": "^0.1.23",
+    "@omdsh-dev/dsh-genui": "github:omdsh-dev/dsh-genui",
+    "dsh-deep-whale": "github:Small-tailqwq/dsh-deep-whale",
+    "dsh-dice-game": "0.1.3",
+    "dsh-mnemon": "^0.2.13",
+    "dsh-paperclip": "0.2.5",
+    "dsh-popout-sidebar": "^1.0.0",
+    "dsh-recommend": "^0.2.0",
+    "dsh-vision-router": "^1.7.3",
+    "dshmarket": "^1.15.0"
+  }
+}

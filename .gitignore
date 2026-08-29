@@ -1,0 +1,8 @@
+dist/
+*.log
+.DS_Store
+Thumbs.db
+node_modules/
+payload/data-template/profiles/web/node_modules/
+payload/data-template/profiles/web/.cordis/
+payload/data-template/profiles/web/bundles/
