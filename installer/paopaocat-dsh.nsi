@@ -24,7 +24,7 @@ OutFile "${SRCDIR}/dist/PaopaocatDSH-Setup-v${APPVERSION}-x64.exe"
 InstallDir "$LOCALAPPDATA\Programs\PaopaocatDSH"
 InstallDirRegKey HKCU "Software\${UNINSTKEY}" "InstallDir"
 RequestExecutionLevel user
-SetCompressor /solid lzma
+SetCompressor zlib
 CRCCheck on
 ShowInstDetails show
 ShowUnInstDetails show
