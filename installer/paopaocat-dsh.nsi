@@ -1,17 +1,17 @@
 ; ═══════════════════════════════════════════════════════════
-; 泡泡猫 DSH 桌面版 v2.1.0 安装程序
-; 基于 DSH 0.1.5-rc.1 · 预装 16 个插件
+; 泡泡猫 DSH 桌面版 v2.1.1 安装程序
+; 基于 DSH 0.1.5-rc.1 · 预装 17 个插件
 ; ═══════════════════════════════════════════════════════════
 Unicode true
 
 !define SRCDIR "/root/软件应用工程区/dsh-desktop-pack"
 !define APPNAME "泡泡猫 DSH"
-!define APPVERSION "2.1.0"
+!define APPVERSION "2.1.1"
 !define UNINSTKEY "PaopaocatDSH"
 
 !include "MUI2.nsh"
 
-VIProductVersion "2.1.0.0"
+VIProductVersion "2.1.1.0"
 VIAddVersionKey "ProductName" "泡泡猫 DSH 桌面版"
 VIAddVersionKey "CompanyName" "泡泡猫 (Paopaocat)"
 VIAddVersionKey "FileDescription" "泡泡猫 DSH 桌面版安装程序"
@@ -25,6 +25,7 @@ InstallDir "$LOCALAPPDATA\Programs\PaopaocatDSH"
 InstallDirRegKey HKCU "Software\${UNINSTKEY}" "InstallDir"
 RequestExecutionLevel user
 SetCompressor /solid lzma
+CRCCheck on
 ShowInstDetails show
 ShowUnInstDetails show
 

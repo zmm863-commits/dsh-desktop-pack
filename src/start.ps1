@@ -1,4 +1,4 @@
-# 泡泡猫 DSH 启动器 v2.1.0 · 适配 DSH 0.1.5-rc.1
+# 泡泡猫 DSH 启动器 v2.1.1 · 适配 DSH 0.1.5-rc.1
 $ErrorActionPreference = 'Continue'
 $root = Split-Path -Parent $PSScriptRoot
 $data = Join-Path $env:APPDATA 'PaopaocatDSH'
@@ -19,7 +19,7 @@ function Fail([string]$m) {
 }
 Log '==================== launcher start ===================='
 Log "root = $root"
-Write-Host '泡泡猫 DSH 桌面版 v2.1.0' -ForegroundColor Cyan
+Write-Host '泡泡猫 DSH 桌面版 v2.1.1' -ForegroundColor Cyan
 Write-Host ("日志文件: {0}" -f $log) -ForegroundColor DarkGray
 
 # ── 0.5/5 首次释放 payload（zip 打包，makensis 规避中文路径段错误）──
