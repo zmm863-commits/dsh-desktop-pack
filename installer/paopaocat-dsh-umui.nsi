@@ -3,7 +3,7 @@ Unicode true
 
 !define SRCDIR "/root/软件/dsh-desktop-pack"
 !define APPNAME "泡泡猫 DSH"
-!define APPVERSION "1.6.6"
+!define APPVERSION "1.6.8"
 !define UNINSTKEY "PaopaocatDSH"
 
 ; === UMUI 核心 ===
@@ -94,6 +94,12 @@ Function PluginsShow
   ${NSD_LB_AddString} $hList "💬 im-connect —— IM 接入（微信/QQ/飞书）"
   ${NSD_LB_AddString} $hList "🛒 dshmarket —— 插件市场"
   ${NSD_LB_AddString} $hList "🎨 maid-atelier —— 深海女仆工坊皮肤"
+  ${NSD_LB_AddString} $hList "📂 archive-manager —— 会话归档管理"
+  ${NSD_LB_AddString} $hList "🧩 skills-manager —— 技能管理器"
+  ${NSD_LB_AddString} $hList "✨ dsh-genui —— 动态界面卡片"
+  ${NSD_LB_AddString} $hList "👁 vision-router —— 视觉识图"
+  ${NSD_LB_AddString} $hList "📊 dsh-recommend —— 插件榜单推荐"
+  ${NSD_LB_AddString} $hList "📌 popout-sidebar —— 弹出侧边栏"
   ${NSD_CreateButton} 0 122u 150u 22u "☁️ 阿里云推荐配置"
   Pop $0
   ${NSD_OnClick} $0 OnAliyunClick
@@ -102,9 +108,11 @@ Function PluginsShow
   ${NSD_OnClick} $0 OnAifadianClick
   ${NSD_CreateLabel} 0 152u 100% 8u "本软件插件除骰子大作战和文件上传为泡泡猫制作，"
   Pop $0
-  ${NSD_CreateLabel} 0 164u 100% 8u "其余均收集整合自开源社区，仅供学习交流使用。"
+  ${NSD_CreateLabel} 0 162u 100% 8u "其余均收集整合自开源社区，仅供学习交流使用。"
   Pop $0
-  ${NSD_CreateLabel} 0 176u 100% 8u "任何使用问题请联系：zmm168@163.com"
+  ${NSD_CreateLabel} 0 172u 100% 8u "任何使用问题请联系：zmm168@163.com"
+  Pop $0
+  ${NSD_CreateLabel} 0 184u 100% 8u "Dice Game & File Upload by Paopaocat; others from open-source. For learning only."
   Pop $0
   nsDialogs::Show
 FunctionEnd
