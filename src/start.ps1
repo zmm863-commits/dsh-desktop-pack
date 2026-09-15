@@ -1,4 +1,4 @@
-# 泡泡猫 DSH 启动器 v2.1.1 · 适配 DSH 0.1.5-rc.1
+﻿# 泡泡猫 DSH 启动器 v2.1.1 · 适配 DSH 0.1.5-rc.1
 $ErrorActionPreference = 'Continue'
 $root = Split-Path -Parent $PSScriptRoot
 $data = Join-Path $env:APPDATA 'PaopaocatDSH'
