@@ -1,8 +1,20 @@
+# 构建产物（不入库）
 dist/
+win-build/
+build/
 *.log
+
+# 依赖（构建时从 npm / 官方包获取，体积过大不入库）
+node_modules/
+
+# macOS / Windows 系统垃圾
 .DS_Store
 Thumbs.db
-node_modules/
-payload/data-template/profiles/web/node_modules/
-payload/data-template/profiles/web/.cordis/
-payload/data-template/profiles/web/bundles/
+
+# payload 脚手架里的运行期状态
+legacy/payload/data-template/profiles/web/.cordis/
+legacy/payload/data-template/profiles/web/bundles/
+
+# Python 缓存
+__pycache__/
+*.pyc

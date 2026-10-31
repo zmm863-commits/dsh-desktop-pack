@@ -1,0 +1,39 @@
+#!/bin/bash
+# 泡泡猫 DSH —— git 包装器（macOS 专用）
+#
+# 为什么需要它：
+#   macOS 自带的 /usr/bin/git 只是一个「占位桩」。在没装命令行开发者工具（CLT）
+#   的机器上执行它就等于请求安装，会弹出「需要安装命令行开发者工具」的系统下载框。
+#   DSH 的 workspace-changes 插件会在会话事件里跑 `git rev-parse`，
+#   于是用户一打开界面就被弹框。
+#
+# 本包装器的行为：
+#   ① 有真 git（CLT / Xcode / Homebrew）→ 直接转发，功能与原来完全一致；
+#   ② 没有 → 打印可执行的解决办法并以 127 退出，**绝不触发下载框**。
+set -u
+
+find_real_git() {
+  local devdir p
+  # ① 命令行开发者工具 / Xcode（`xcode-select -p` 本身不会触发下载框）
+  if command -v xcode-select >/dev/null 2>&1; then
+    devdir="$(xcode-select -p 2>/dev/null || true)"
+    if [ -n "$devdir" ] && [ -x "$devdir/usr/bin/git" ]; then
+      printf '%s\n' "$devdir/usr/bin/git"; return 0
+    fi
+  fi
+  # ② Homebrew / 手动安装（注意排除本包装器自身）
+  for p in /opt/homebrew/bin/git /usr/local/bin/git; do
+    if [ -x "$p" ] && [ "$p" != "$0" ]; then printf '%s\n' "$p"; return 0; fi
+  done
+  return 1
+}
+
+REAL="$(find_real_git)" || {
+  {
+    printf '%s\n' '泡泡猫 DSH: 本机没有可用的 git（未安装 macOS 命令行开发者工具）。'
+    printf '%s\n' '  需要 git 功能时（工作区变更、让助手提交代码等），请在「终端」执行：'
+    printf '%s\n' '    xcode-select --install'
+  } >&2
+  exit 127
+}
+exec "$REAL" "$@"

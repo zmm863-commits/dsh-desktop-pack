@@ -1,18 +1,27 @@
 # 泡泡猫 DSH 桌面版 — 技术文档
 
-> 版本：v2.3.0  
-> 日期：2025-09-16  
+> 版本：v2.3.2  
+> 日期：2026-09-18  
 > DSH 核心：@deepseek-ai/dsh 0.1.5-rc.1  
 > 安装包大小：147MB  
+> 官网作品页：https://soft.zmm168.top/apps/deepseek-harness  
 > GitHub 仓库：[zmm863-commits/dsh-desktop-pack](https://github.com/zmm863-commits/dsh-desktop-pack)
 
 ### 📥 下载地址
 
-| 版本 | 直链下载 | 大小 |
-|------|----------|------|
-| v2.3.0（最新） | [PaopaocatDSH-Setup-v2.3.0-x64.exe](https://github.com/zmm863-commits/dsh-desktop-pack/releases/download/v2.3.0/PaopaocatDSH-Setup-v2.3.0-x64.exe) | 147MB |
+**官网直链（推荐，单文件无需合并）：**
 
-> 💡 如果 GitHub 下载慢，可以使用 [ghproxy 加速](https://ghproxy.com/https://github.com/zmm863-commits/dsh-desktop-pack/releases/download/v2.3.0/PaopaocatDSH-Setup-v2.3.0-x64.exe)
+```
+https://soft.zmm168.top/d/deepseek-harness/windows
+```
+
+| 渠道 | 地址 | 说明 |
+|------|------|------|
+| 官网直链 | https://soft.zmm168.top/d/deepseek-harness/windows | 单文件，直接安装 |
+| 官网作品页 | https://soft.zmm168.top/apps/deepseek-harness | 含手机扫码下载、使用说明 |
+| GitHub Release | https://github.com/zmm863-commits/dsh-desktop-pack/releases | 备用；安装包分两卷，需合并 |
+
+> 💡 GitHub 上的安装包受单文件 100MB 限制，被拆成 `.part_aa` / `.part_ab` 两卷，下载后需用 `copy /b` 合并。官网直链不受此限制，优先使用官网。
 
 ---
 
@@ -86,7 +95,7 @@
 ## 2. 安装包结构
 
 ```
-PaopaocatDSH-Setup-v2.3.0-x64.exe (147MB)
+PaopaocatDSH-Setup-v2.3.2-x64.exe (147MB)
 ├── node/                    # Node.js v22.23.2 (Windows x64)
 ├── app/                     # DSH 核心 (@deepseek-ai/dsh 0.1.5-rc.1)
 │   └── node_modules/
@@ -269,8 +278,9 @@ PaopaocatDSH-Setup-v2.3.0-x64.exe (147MB)
 
 ```
 [1/5] 检查数据目录
-  ├─ 首次运行：robocopy data-template → %APPDATA%\PaopaocatDSH\
-  └─ 已初始化：跳过
+  ├─ 首次运行（无 profiles/web/node_modules）：robocopy data-template → %APPDATA%\PaopaocatDSH\
+  ├─ 版本变化（installer 版本 != .install-version）：只同步程序文件，保留用户数据
+  └─ 已是最新：跳过
 
 [2/5] 检查 API Key
   ├─ .env 不存在：弹出 first-run.ps1 向导
@@ -291,6 +301,47 @@ PaopaocatDSH-Setup-v2.3.0-x64.exe (147MB)
 
 [5/5] 启动 DSH 服务
   └─ node app/lib/bin.js web
+```
+
+### 4.1.1 升级同步机制（v2.3.2 新增）
+
+桌面版真正的运行目录是 `%APPDATA%\PaopaocatDSH`，`$INSTDIR\data-template` 只是**模板**。旧版启动器仅在**首次运行**时复制模板，导致覆盖安装后插件始终是旧的。
+
+v2.3.2 引入版本感知同步：
+
+```
+安装时：installer.nsi 写 $INSTDIR\launcher\version.txt = ${APPVERSION}
+
+启动时：
+  $instVer = version.txt 内容
+  $recVer  = %APPDATA%\PaopaocatDSH\.install-version 内容
+
+  if 首次安装        → 全量 robocopy，写入 .install-version
+  elif $instVer != $recVer 且 3080 端口空闲
+                     → robocopy $tpl $data /E
+                         /XF .env settings.yaml .credentials.yaml launcher.log
+                         /XD sessions archives
+                       写入 .install-version
+  else               → 跳过
+```
+
+**为什么用户数据是安全的**：`robocopy /E` 只把源文件复制到目标，**从不删除目标独有的文件**。因此用户在 `%APPDATA%` 里自建的工作区、会话、凭据天然不受影响。真正需要显式排除的只有 `settings.yaml`（模板里存在同名文件，不排除会被覆盖）。
+
+**为什么用端口检测兜底**：若启动器是在 DSH 已经运行时被双击的，此时同步会撞上被锁定的文件。因此同步前先探测 3080，占用则跳过，留到下次启动生效。
+
+### 4.1.2 覆盖安装前关闭旧版本（v2.3.2 新增）
+
+`node.exe` 是运行中的镜像、`.node` 是已加载的 DLL，Windows 会锁住它们。旧版安装器没有进程检测，`File /r` 撞锁即报 `Error opening file for writing` 中断 —— 这是「安装包无法覆盖旧版本」的根因。
+
+```
+安装流程：
+  1. File /oname=$PLUGINSDIR\stop-running.ps1  （从 payload 解出到临时目录）
+  2. nsExec::ExecToLog 执行该脚本，传入 $INSTDIR
+  3. stop-running.ps1：Get-Process | ? { $_.Path.StartsWith($Root) }
+                        → CloseMainWindow() → 未退出则 Kill()
+                        → 轮询最多 8 秒等待文件锁释放
+     退出码 0 = 全部关闭；1 = 仍有进程
+  4. 退出码非 0 → MessageBox IDRETRY，让用户手动关闭后重试
 ```
 
 ### 4.2 关键环境变量
@@ -434,6 +485,22 @@ fluidParams() {
 **解决**：改用 robocopy（和工作包一致）：
 - 安装时：`File /r` 将 data-template 复制到安装目录
 - 首次运行：`robocopy $tpl $data /E` 复制到 %APPDATA%
+
+### 5.8 安装包无法覆盖旧版本（v2.3.2 修复）
+
+**问题**：装过旧版本后再运行新安装包，报 `Error opening file for writing` 并中断。
+
+**原因**：启动器执行的是 `$INSTDIR\node\node.exe`，运行中的镜像文件被 Windows 锁定；另有多个 `.node` 原生模块被加载成 DLL，同样锁定。而旧版 `installer.nsi` **完全没有进程检测**，`File /r` 撞上被锁文件直接失败。
+
+**解决**：安装前解出并执行 `stop-running.ps1` 关闭旧版本，详见 [4.1.2](#412-覆盖安装前关闭旧版本v232-新增)。
+
+### 5.9 覆盖安装后插件不更新（v2.3.2 修复）
+
+**问题**：装上新版本，插件仍是旧的（例如影视工具界面毫无变化）。
+
+**原因**：真正的运行目录是 `%APPDATA%\PaopaocatDSH`，`$INSTDIR\data-template` 只是模板。而启动器仅在**首次运行**时复制模板，覆盖安装时该目录已存在 → 整段跳过 → 新插件永远进不去。
+
+**解决**：引入版本感知同步，详见 [4.1.1](#411-升级同步机制v232-新增)。
 
 ---
 
@@ -628,7 +695,9 @@ SectionEnd
 | v2.2.7 | 09-16 | seaglass 降级 1.6.6 | applyFluidPalettes 错误 |
 | v2.2.8 | 09-16 | 全部插件换服务器版本 | 同上 |
 | v2.2.9 | 09-16 | 修复 paopaocat applyFluidPalettes | ✅ 完全正常！ |
-| v2.3.0 | 09-16 | 去掉 seaglass | ✅ 最终版本 |
+| v2.3.0 | 09-16 | 去掉 seaglass | ✅ 首个公开发布版 |
+| v2.3.1 | 09-18 | 修复 start.ps1 三重 BOM 红字；加启动等待提示；归档管理插件升级修复首次建工作区报错 | ✅ |
+| v2.3.2 | 09-18 | 修复覆盖安装失败（运行中程序锁定文件）；修复覆盖安装后插件不更新（版本感知同步）；同步影视工具大改版 | ✅ 当前版本 |
 
 ---
 
@@ -636,34 +705,44 @@ SectionEnd
 
 ### 9.1 launcher/start.ps1
 
-- **编码**：UTF-8 with BOM（EF BB BF）
-- **行数**：~115 行
-- **功能**：五步启动流程
-- **关键函数**：`Log()`, `Fail()`, `Test-Settings()`
+- **编码**：UTF-8 with BOM（EF BB BF，**必须恰好 1 个**）
+- **功能**：五步启动流程 + 版本感知的数据目录同步
+- **关键函数**：`Log()`, `Fail()`, `Test-Settings()`, `Test-DshPort()`
+- **读取的文件**：`launcher\version.txt`（安装器写入）、`$data\.install-version`（本脚本写入）
 
-### 9.2 launcher/first-run.ps1
+### 9.2 launcher/stop-running.ps1
+
+- **编码**：UTF-8 with BOM
+- **功能**：安装前关闭从安装目录启动的进程（v2.3.2 新增）
+- **调用方式**：安装器解出到 `$PLUGINSDIR` 后以 `$INSTDIR` 为参数执行
+- **退出码**：0 = 全部关闭；1 = 仍有进程未关闭
+- **实现**：`Get-Process | ? { $_.Path.StartsWith($Root) }` → `CloseMainWindow()` → `Kill()` → 轮询等待文件锁释放
+
+### 9.3 launcher/first-run.ps1
 
 - **编码**：UTF-8 with BOM
 - **功能**：API Key 配置向导（WinForms GUI）
 - **UI 风格**：暗色主题（#1E212B 背景，#E8C97A 标题）
 - **验证**：Key 长度 ≥ 10 字符
 
-### 9.3 launcher/check-settings.cjs
+### 9.4 launcher/check-settings.cjs
 
 - **编码**：UTF-8
 - **功能**：校验 settings.yaml 格式
 - **依赖**：yaml 库（内嵌）
 
-### 9.4 data-template/profiles/web/package.json
+### 9.5 data-template/profiles/web/package.json
 
 - **bundles**：17 个插件声明
 - **dependencies**：16 个依赖（含 file: 引用）
 
-### 9.5 installer.nsi
+### 9.6 installer.nsi
 
 - **压缩**：/solid lzma + CRCCheck on
 - **Unicode**：true
 - **输出**：dist/PaopaocatDSH-Setup-v${VERSION}-x64.exe
+- **安装前动作**：解出并执行 `stop-running.ps1`，关闭正在运行的旧版本
+- **安装时写入**：`$INSTDIR\launcher\version.txt`（供启动器判断是否需要同步）
 
 ---
 
@@ -763,10 +842,10 @@ cd /root/dshpack-v2 && makensis -V2 installer.nsi
 
 ## 13. 与工作包（PaopaocatDSH-Setup-x64_6.exe）的对比
 
-| 对比项 | 工作包 | v2.3.0 |
+| 对比项 | 工作包 | v2.3.2 |
 |--------|--------|--------|
 | DSH 版本 | 0.1.1-rc.2 | 0.1.5-rc.1 |
-| 启动器版本 | v1.2.0 | v2.3.0 |
+| 启动器版本 | v1.2.0 | v2.3.2 |
 | Bundle 数量 | 16 | 17 |
 | 包管理器 | pnpm | pnpm |
 | data-template 传输 | robocopy | robocopy |

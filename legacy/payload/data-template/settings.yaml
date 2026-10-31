@@ -1,0 +1,36 @@
+﻿llm-pi-ai:
+  providers:
+    deepseek:
+      displayName: DeepSeek
+      apiKeyEnv: DEEPSEEK_API_KEY
+      api: openai-completions
+      baseURL: https://api.deepseek.com/v1
+      models:
+        - id: deepseek-chat
+          name: deepseek-chat (V3)
+        - id: deepseek-reasoner
+          name: deepseek-reasoner (R1)
+agent-default-model:
+  provider: deepseek
+  model: deepseek-chat
+dsh-market:
+  allowRestart: false
+ui-theme:
+  preference: dark
+agent-presets:
+  default: cordis
+agency-agents:
+  enabled:
+    - design-ux-architect
+    - engineering-code-reviewer
+    - engineering-minimal-change-engineer
+    - specialized-document-generator
+    - design-image-prompt-engineer
+    - engineering-prompt-engineer
+    - engineering-wechat-mini-program-developer
+    - engineering-software-architect
+    - engineering-senior-developer
+    - game-designer
+
+terminal-bash:
+  shellPath: __INSTALLDIR__/git/usr/bin/bash.exe
